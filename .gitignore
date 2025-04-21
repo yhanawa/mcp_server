@@ -5,6 +5,10 @@ build/
 dist/
 wheels/
 *.egg-info
+.DS_Store
+document/anthropic_docs.json
+document/gemini_docs.json
+document/openapi.yaml
 
 # Virtual environments
 .venv

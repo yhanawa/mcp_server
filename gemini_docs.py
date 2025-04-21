@@ -80,7 +80,7 @@ class DocsRepository:
         return None
 
 # リポジトリの初期化
-docs_repository = DocsRepository("document/gemini_docs1.json")
+docs_repository = DocsRepository("document/gemini_docs.json")
 
 # ドキュメント一覧リソース
 @mcp.resource("gemini-docs://all")

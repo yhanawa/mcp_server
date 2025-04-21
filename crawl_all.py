@@ -295,27 +295,7 @@ class APIDocCrawler:
                 logger.info("Seleniumドライバーを終了しました")
 
 
-def openai_crawl():
-    """OpenAI APIドキュメントのクロール用設定"""
-    return {
-        "base_url": "https://platform.openai.com",
-        "start_path": "/docs/overview",
-        "additional_paths": [
-            "/docs/api-reference",
-            "/docs/api-reference/introduction",
-            "/docs/api-reference/models",
-            "/docs/api-reference/chat",
-            "/docs/api-reference/assistants"
-        ],
-        "output_file": "document/openai_docs.json",
-        "selector": "main .docs-content, main article, main, article, .docs-body, .content-wrapper, .content",
-        "use_selenium": True,
-        "path_pattern": r"^/docs/api-reference/.*",
-        "max_pages": 200,  # 安全のために最大ページ数を制限
-        "wait_time": 8,
-        "delay": 1.0
-    }
-    
+
 def anthropic_crawl():
     """Anthropic APIドキュメントのクロール用設定"""
     return {
@@ -355,28 +335,11 @@ def gemini_crawl():
 
 # プリセット設定
 PRESETS = {
-    "openai": openai_crawl,
     "anthropic": anthropic_crawl,
     "gemini": gemini_crawl
 }
 
 if __name__ == "__main__":
-    # OpenAI APIドキュメント用の設定を更新
-    openai_config = openai_crawl()
-    openai_config.update({
-        "selector": "main, article, .docs-content, main .content, main article",
-        "use_selenium": True,
-        "additional_paths": [
-            "/docs/api-reference/introduction", 
-            "/docs/api-reference/models", 
-            "/docs/api-reference/chat",
-            "/docs/api-reference/assistants",
-            "/docs/api-reference/files"
-        ],
-        "wait_time": 8,  # ページロードの待機時間を増やす
-        "delay": 1.0     # リクエスト間の遅延を増やす
-    })
-    
     # Anthropic APIドキュメント用の設定を更新
     anthropic_config = anthropic_crawl()
     anthropic_config.update({
@@ -390,12 +353,12 @@ if __name__ == "__main__":
     
     # プリセット設定か詳細設定かのグループ
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--preset", choices=PRESETS.keys(), help="事前定義された設定を使用 (openai, anthropic, gemini)")
+    group.add_argument("--preset", choices=PRESETS.keys(), help="事前定義された設定を使用 (anthropic, gemini)")
     group.add_argument("--base-url", help="ベースURL (例: https://ai.google.dev)")
     
     # その他の引数
     parser.add_argument("--start-path", help="開始パス (例: /gemini-api/docs/)")
-    parser.add_argument("--output", help="出力JSONファイル名")
+    parser.add_argument("--output_file", help="出力JSONファイル名")
     parser.add_argument("--selector", default="main", help="コンテンツを含む要素のCSSセレクタ (デフォルト: main)")
     parser.add_argument("--delay", type=float, default=0.5, help="リクエスト間の遅延（秒）(デフォルト: 0.5)")
     parser.add_argument("--use-selenium", action="store_true", help="動的コンテンツにSeleniumを使用する")
@@ -415,13 +378,13 @@ if __name__ == "__main__":
     if args.preset:
         config = PRESETS[args.preset]()
     else:
-        if not args.base_url or not args.start_path or not args.output:
+        if not args.base_url or not args.start_path or not args.output_file:
             parser.error("--preset を使用しない場合は --base-url, --start-path, --output が必須です")
             
         config = {
             "base_url": args.base_url,
             "start_path": args.start_path,
-            "output_file": args.output,
+            "output_file": args.output_file,
             "selector": args.selector,
             "delay": args.delay,
             "use_selenium": args.use_selenium,
