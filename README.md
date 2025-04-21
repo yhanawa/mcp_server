@@ -2,8 +2,6 @@
 
 This README provides an overview of the files in the current directory and instructions for usage.
 
-## Files in `gemini_docs`
-
 - `README.md`: This file, providing an overview and usage instructions.
 - `crawl.py`: Script for crawling specific web pages.
 - `gemini_docs_all.json`: Result of crawling the official Gemini API documentation.
