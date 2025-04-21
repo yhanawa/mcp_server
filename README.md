@@ -2,7 +2,7 @@
 
 This README provides an overview of the files in the current directory and instructions for usage.
 
-## Files in `/Users/hanawayuki/Documents/funrepeat/gemini_docs`
+## Files in `gemini_docs`
 
 - `README.md`: This file, providing an overview and usage instructions.
 - `crawl.py`: Script for crawling specific web pages.
