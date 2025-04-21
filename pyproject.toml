@@ -1,0 +1,11 @@
+[project]
+name = "gemini-docs"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.2.1",
+    "mcp[cli]>=1.6.0",
+    "pyyaml>=6.0.2",
+]
