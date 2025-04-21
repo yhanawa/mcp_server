@@ -1,72 +1,84 @@
 # プロジェクトディレクトリ概要
 
-API ドキュメントを参照する MCP サーバーの使用方法について
+このプロジェクトは、MCP サーバーを使用して API ドキュメントを参照する方法を提供します。
 
-- `README.md`: このファイル。概要と使用方法を提供します。
+## ディレクトリ構成
+
+- `README.md`: このファイル。プロジェクトの概要と使用方法を記載しています。
 - `crawl_all.py`: 特定のウェブページをクロールするスクリプト。（使用方法は後述）
-- `document/` : クローリングした結果がこのディレクトリに入る
-- `gemini_docs.py`: `gemini_docs.json`の内容を MCP サーバー経由で提供するメインプログラム。
-- `anthropic_docs.py`: `anthropic_docs.json`の内容を MCP サーバー経由で提供するメインプログラム。
-- `openapi_docs.py`: `openapi.yaml`の内容を MCP サーバー経由で提供するメインプログラム。
+- `document/`: クローリングした結果が保存されるディレクトリ。
+- `gemini_docs.py`: `gemini_docs.json` の内容を MCP サーバー経由で提供するメインプログラム。
+- `anthropic_docs.py`: `anthropic_docs.json` の内容を MCP サーバー経由で提供するメインプログラム。
+- `openapi_docs.py`: `openapi.yaml` の内容を MCP サーバー経由で提供するメインプログラム。
 
-## 使用方法（参考 →https://modelcontextprotocol.io/quickstart/server#set-up-your-environment）
+## 使用方法
 
-1. uv をインストール
+詳細なセットアップ手順については、[公式クイックスタートガイド](https://modelcontextprotocol.io/quickstart/server#set-up-your-environment)を参照してください。
+
+1. **uv のインストール**
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-1. 仮想環境を有効化する:
+2. **仮想環境の有効化**
 
 ```bash
 uv venv
 source .venv/bin/activate
 ```
 
-2. 依存関係をインストールする:
+3. **依存関係のインストール**
 
 ```bash
 uv add "mcp[cli]" PyYAML
 ```
 
-3. プログラムが正しく動作するか確認する(例：gemini_docs.py):
+4. **プログラムの動作確認**
+
+例として、`gemini_docs.py` を実行します。
 
 ```bash
 uv run gemini_docs.py
 ```
 
-4. `claude_desktop_config.json`を以下の設定で更新する:
+5. **`claude_desktop_config.json` の更新**
+
+以下の設定を追加または更新してください。
 
 ```json
 {
   "mcpServers": {
     "gemini_docs_resource": {
-      "command": "uv (←実行がうまくいかない場合にはuvまでの絶対パスに変更)",
+      "command": "uv",
       "args": [
         "--directory",
         "mcp_server ディレクトリへのパス",
         "run",
-        "gemini_docs.py（←適宜ファイル名を変更、anthoropic_docs.py or openapi_docs.py）"
+        "gemini_docs.py"
       ]
     }
   }
 }
 ```
 
-5. 変更を適用するために Claude を再起動する。
+**注:** 実行がうまくいかない場合は、`uv` を絶対パスに変更してください。また、必要に応じて `gemini_docs.py` を `anthropic_docs.py` または `openapi_docs.py` に変更してください。
 
-##　各 mcp サーバーについて
+6. **Claude の再起動**
 
-- gemini_docs.py : クローリングした結果が json ファイルのためその結果を利用している
-- anthropic_docs.py : クローリングした結果が json ファイルのためその結果を利用している
-- openapi_docs.py : openapi はドキュメントがクローリングできない。よって、github(https://github.com/openai/openai-openapi/tree/master)からファイルをダウンロードし、そのファイルを参照。そのため、yml形式のファイルを読み取れるようなプログラムになっている
+設定を反映させるために Claude を再起動してください。
 
-##　クローリング
-crawl_all.py ではプリセットを使用して、gemini と anthropic のドキュメントをクローリングできる
+## 各 MCP サーバーについて
+
+- **gemini_docs.py**: クローリング結果が JSON ファイルとして保存され、その内容を利用します。
+- **anthropic_docs.py**: クローリング結果が JSON ファイルとして保存され、その内容を利用します。
+- **openapi_docs.py**: OpenAPI ドキュメントはクローリングできないため、[GitHub リポジトリ](https://github.com/openai/openai-openapi/tree/master)からダウンロードしたファイルを参照します。このプログラムは YAML 形式のファイルを読み取るように設計されています。
+
+## クローリング
+
+`crawl_all.py` を使用して、プリセットに基づき gemini と anthropic のドキュメントをクローリングできます。
 
 ```bash
 python crawl_all.py --preset gemini
-
 python crawl_all.py --preset anthropic
 ```
