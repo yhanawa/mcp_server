@@ -1,7 +1,6 @@
 # プロジェクトディレクトリ概要
 
-このプロジェクトは、MCP サーバーを使用して API ドキュメントを参照する方法を提供します。
-reference の機能を使用し、実装しました。
+このプロジェクトは、MCP サーバーを使用して API ドキュメントを参照する方法を提供します。`reference` の機能を使用して実装されています。
 
 ## ディレクトリ構成
 
@@ -14,8 +13,7 @@ reference の機能を使用し、実装しました。
 
 ## 使用方法
 
-詳細なセットアップ手順については、[公式クイックスタートガイド](https://modelcontextprotocol.io/quickstart/server#set-up-your-environment)を参照してください。
-事前に本リポジトリをクローンしてください
+詳細なセットアップ手順については、[公式クイックスタートガイド](https://modelcontextprotocol.io/quickstart/server#set-up-your-environment)を参照してください。事前に本リポジトリをクローンしてください。
 
 1. **uv のインストール**
 
@@ -78,9 +76,39 @@ uv run gemini_docs.py
 
 ## クローリング
 
-`crawl_all.py` を使用して、プリセットに基づき gemini と anthropic のドキュメントをクローリングできます。
+`crawl_all.py` を使用して、プリセットに基づき gemini と anthropic のドキュメントをクロールできます。
 
 ```bash
 python crawl_all.py --preset gemini
 python crawl_all.py --preset anthropic
 ```
+
+また、プリセットを使用せず、任意の設定でクロールすることも可能です。
+
+```bash
+python crawl_all.py \
+  --base-url "https://example.com" \
+  --start-path "/docs" \
+  --output_file "document/example_docs.json" \
+  --selector "main" \
+  --path-pattern "^/docs/.*" \
+  --delay 0.5 \
+  --max-pages 100
+```
+
+### 主なコマンドラインオプション
+
+| オプション           | 説明                                                                             |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `--preset`           | gemini または anthropic を指定すると、事前定義された設定でクロールを開始します。 |
+| `--base-url`         | クロール対象サイトのベース URL（例: https://example.com）。                      |
+| `--start-path`       | クロール開始パス（例: /docs）。                                                  |
+| `--output_file`      | クロール結果の保存先ファイルパス（例: document/example_docs.json）。             |
+| `--selector`         | ページ内でコンテンツを取得するための CSS セレクタ（デフォルト: main）。          |
+| `--delay`            | 各リクエスト間の待機時間（秒）（デフォルト: 0.5 秒）。                           |
+| `--use-selenium`     | 動的ページ対応のため Selenium を使用する場合に指定します。                       |
+| `--wait-time`        | Selenium 使用時のページ読み込み待機時間（秒）（デフォルト: 5 秒）。              |
+| `--additional-paths` | クロール対象に追加するパスのリスト。                                             |
+| `--path-pattern`     | クロール対象とする URL パスの正規表現パターン。                                  |
+| `--max-pages`        | 最大クロールページ数（例: 200 ページまで）。                                     |
+| `--debug`            | デバッグモードを有効にして詳細なログを出力します。                               |
