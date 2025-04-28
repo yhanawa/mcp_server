@@ -10,6 +10,8 @@ document/anthropic_docs.json
 document/gemini_docs.json
 document/openapi.yaml
 document/.DS_Store
+test.py
+helloalice.py
 
 # Virtual environments
 .venv

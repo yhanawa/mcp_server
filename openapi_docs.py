@@ -4,6 +4,14 @@ import os
 import re
 import yaml
 from mcp.server.fastmcp import FastMCP
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("api_docs_server")
 
 # MCPサーバー初期化
 mcp = FastMCP(
@@ -21,15 +29,6 @@ class DocsRepository:
         self.docs_data = []
         self.load_data()
     
-    # def load_data(self) -> None:
-    #     """JSONファイルからドキュメントデータを読み込む"""
-    #     try:
-    #         with open(self.file_path, 'r', encoding='utf-8') as file:
-    #             self.docs_data = json.load(file)
-    #         print(f"Loaded {len(self.docs_data)} documents from {self.file_path}")
-    #     except Exception as e:
-    #         print(f"Error loading JSON data: {e}")
-    #         self.docs_data = []
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.docs_data = []
@@ -138,8 +137,8 @@ Responses: {str(operation.get('responses', {}))}
 # リポジトリの初期化
 docs_repository = DocsRepository("document/openapi.yaml")
 
-# ドキュメント一覧リソース
-@mcp.resource("api-docs://all")
+# 静的リソース: ドキュメント一覧
+@mcp.resource("docs://list")
 async def list_all_documents() -> dict:
     """すべてのドキュメント一覧を返します"""
     if not docs_repository.docs_data:
@@ -157,78 +156,137 @@ async def list_all_documents() -> dict:
         "text": "\n".join(doc_list)
     }
 
-# 特定のドキュメントリソース
-@mcp.resource("api-doc://{url}")
-async def get_doc_by_url(url: str) -> dict:
-    """指定URLのドキュメントを返します"""
+# 静的リソース: データ再読み込み
+@mcp.resource("docs://reload")
+async def reload_data() -> dict:
+    """データを再読み込みします"""
+    was_updated = docs_repository.load_data()
+    status_message = f"データを再読み込みしました。{len(docs_repository.docs_data)}件のドキュメントがロードされました。" if was_updated else "ファイルに変更がないため、再読み込みは行いませんでした。"
+    
+    return {
+        "mimeType": "text/plain",
+        "text": status_message
+    }
+
+# 静的リソース: サーバー状態
+@mcp.resource("docs://status")
+async def get_status() -> dict:
+    """サーバーの状態を返します"""
+    return {
+        "mimeType": "application/json",
+        "text": json.dumps({
+            "status": "running",
+            "documentCount": len(docs_repository.docs_data),
+            "sourceFile": str(docs_repository.file_path),
+            "lastModified": docs_repository.last_modified_time
+        }, indent=2)
+    }
+
+# ツール: ドキュメント取得（URLパラメータを使用）
+@mcp.tool("getDocument_openapi")
+async def get_document_by_url(url: str) -> dict:
+    """
+    指定されたURLに基づいてドキュメントを取得します。
+    
+    Args:
+        url: ドキュメントのURL
+        
+    Returns:
+        ドキュメントの内容
+    """
     if not docs_repository.docs_data:
         return {
-            "mimeType": "text/plain",
-            "text": "ドキュメントデータが読み込まれていません。"
+            "success": False,
+            "message": "ドキュメントデータが読み込まれていません。"
         }
     
     doc = docs_repository.get_by_url(url)
     if not doc:
         return {
-            "mimeType": "text/plain",
-            "text": "指定されたURLのドキュメントは見つかりませんでした。"
+            "success": False,
+            "message": f"指定されたURL '{url}' のドキュメントは見つかりませんでした。"
         }
     
-    content = f"""
-タイトル: {doc.get('title', 'タイトルなし')}
-URL: {url}
----
-{doc.get('content', 'コンテンツなし')}
-"""
-    
+    # レスポンスの作成
     return {
-        "mimeType": "text/plain",
-        "text": content
+        "success": True,
+        "document": {
+            "title": doc.get('title', 'タイトルなし'),
+            "url": url,
+            "content": doc.get('content', 'コンテンツなし')
+        }
     }
 
-# 検索結果リソース
-@mcp.resource("api-search://{query}")
-async def search_docs(query: str) -> dict:
-    """キーワードでドキュメントを検索します"""
+# ツール: インデックスでドキュメント取得
+@mcp.tool("getDocumentByIndex_openapi")
+async def get_document_by_index(index: int) -> dict:
+    """
+    指定されたインデックス番号のドキュメントを取得します。
+    
+    Args:
+        index: ドキュメントのインデックス（1から始まる）
+        
+    Returns:
+        ドキュメントの内容
+    """
     if not docs_repository.docs_data:
         return {
-            "mimeType": "text/plain",
-            "text": "ドキュメントデータが読み込まれていません。"
+            "success": False,
+            "message": "ドキュメントデータが読み込まれていません。"
+        }
+    
+    # インデックスの検証
+    idx = index - 1  # 1-based から 0-based へ変換
+    if idx < 0 or idx >= len(docs_repository.docs_data):
+        return {
+            "success": False,
+            "message": f"インデックス {index} は範囲外です。有効な範囲: 1-{len(docs_repository.docs_data)}"
+        }
+    
+    doc = docs_repository.docs_data[idx]
+    return {
+        "success": True,
+        "document": {
+            "title": doc.get('title', 'タイトルなし'),
+            "url": doc.get('url', 'URLなし'),
+            "content": doc.get('content', 'コンテンツなし')
+        }
+    }
+
+# ツール: ドキュメント検索
+@mcp.tool("searchDocuments_openapi")
+async def search_documents(query: str) -> dict:
+    """
+    指定されたクエリでドキュメントを検索します。
+    
+    Args:
+        query: 検索クエリ
+        
+    Returns:
+        検索結果のリスト
+    """
+    if not docs_repository.docs_data:
+        return {
+            "success": False,
+            "message": "ドキュメントデータが読み込まれていません。"
         }
     
     results = docs_repository.search(query)
     
     if not results:
         return {
-            "mimeType": "text/plain",
-            "text": "該当する情報は見つかりませんでした。"
+            "success": False,
+            "message": f"検索クエリ '{query}' に一致するドキュメントは見つかりませんでした。"
         }
     
-    # 結果をフォーマット
-    formatted_results = []
-    for i, result in enumerate(results, 1):
-        formatted_results.append(f"""
-結果 {i}:
-タイトル: {result['title']}
-URL: {result['url']}
-プレビュー: {result['preview']}
-""")
-    
     return {
-        "mimeType": "text/plain",
-        "text": "\n---\n".join(formatted_results)
-    }
-
-# データ再読み込みリソース
-@mcp.resource("api-docs://reload")
-async def reload_data() -> dict:
-    """データを再読み込みします"""
-    docs_repository.load_data()
-    return {
-        "mimeType": "text/plain",
-        "text": f"データを再読み込みしました。{len(docs_repository.docs_data)}件のドキュメントがロードされました。"
+        "success": True,
+        "query": query,
+        "count": len(results),
+        "results": results
     }
 
 if __name__ == "__main__":
     # サーバーを実行
+    logger.info("Starting API Docs Server with MCP tools")
     mcp.run(transport='stdio')
