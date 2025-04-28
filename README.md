@@ -15,26 +15,29 @@
 
 詳細なセットアップ手順については、[公式クイックスタートガイド](https://modelcontextprotocol.io/quickstart/server#set-up-your-environment)を参照してください。事前に本リポジトリをクローンしてください。
 
-1. **uv のインストール**
+1. **ドキュメントの用意**
+   document の中身は本リポジトリには含めておりません。各自クローリングして document 内に保存してください。詳しい方法については本 readme 末尾に記載があります。
+
+2. **uv のインストール**
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-2. **仮想環境の有効化**
+3. **仮想環境の有効化**
 
 ```bash
 uv venv
 source .venv/bin/activate
 ```
 
-3. **依存関係のインストール**
+4. **依存関係のインストール**
 
 ```bash
 uv add "mcp[cli]" PyYAML
 ```
 
-4. **プログラムの動作確認**
+5. **プログラムの動作確認**
 
 例として、`gemini_docs.py` を実行します。
 
@@ -42,7 +45,7 @@ uv add "mcp[cli]" PyYAML
 uv run gemini_docs.py
 ```
 
-5. **`claude_desktop_config.json` の更新**
+6. **`claude_desktop_config.json` の更新**
 
 以下の設定を追加または更新してください。
 
@@ -64,7 +67,7 @@ uv run gemini_docs.py
 
 **注:** 実行がうまくいかない場合は、`uv` を絶対パスに変更してください。また、必要に応じて `gemini_docs.py` を `anthropic_docs.py` または `openapi_docs.py` に変更してください。
 
-6. **Claude の再起動**
+7. **Claude の再起動**
 
 設定を反映させるために Claude を再起動してください。
 
