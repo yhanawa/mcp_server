@@ -15,6 +15,7 @@ reference の機能を使用し、実装しました。
 ## 使用方法
 
 詳細なセットアップ手順については、[公式クイックスタートガイド](https://modelcontextprotocol.io/quickstart/server#set-up-your-environment)を参照してください。
+事前に本リポジトリをクローンしてください
 
 1. **uv のインストール**
 
