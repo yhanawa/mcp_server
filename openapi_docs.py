@@ -15,20 +15,11 @@ logger = logging.getLogger("api_docs_server")
 
 # MCPサーバー初期化
 mcp = FastMCP(
-    "openapi_docs",
-    server_info={
-        "name": "API Docs Server",
-        "version": "1.0.0"
-    }
+    "openapi_docs"
 )
 
 # JSONデータ管理クラス
 class DocsRepository:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-        self.docs_data = []
-        self.load_data()
-    
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.docs_data = []

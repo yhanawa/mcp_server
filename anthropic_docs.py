@@ -16,12 +16,7 @@ logger = logging.getLogger("api_docs_server")
 
 # MCPサーバー初期化 - ツール機能を有効化
 mcp = FastMCP(
-    "anthropic_docs",
-    server_info={
-        "name": "API Docs Server",
-        "version": "1.0.0",
-        "description": "API documentation server with search capability"
-    }
+    "anthropic_docs"
 )
 
 # JSONデータ管理クラス
