@@ -141,10 +141,8 @@ async def list_all_documents() -> dict:
 async def get_document_by_url(url: str) -> dict:
     """
     指定されたURLに基づいてドキュメントを取得します。
-    
     Args:
         url: ドキュメントのURL
-        
     Returns:
         ドキュメントの内容
     """
@@ -153,14 +151,12 @@ async def get_document_by_url(url: str) -> dict:
             "success": False,
             "message": "ドキュメントデータが読み込まれていません。"
         }
-    
     doc = docs_repository.get_by_url(url)
     if not doc:
         return {
             "success": False,
             "message": f"指定されたURL '{url}' のドキュメントは見つかりませんでした。"
         }
-    
     # レスポンスの作成
     return {
         "success": True,
