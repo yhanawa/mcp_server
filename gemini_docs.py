@@ -135,31 +135,6 @@ async def list_all_documents() -> dict:
         "text": "\n".join(doc_list)
     }
 
-# 静的リソース: データ再読み込み
-@mcp.resource("docs://reload")
-async def reload_data() -> dict:
-    """データを再読み込みします"""
-    was_updated = docs_repository.load_data()
-    status_message = f"データを再読み込みしました。{len(docs_repository.docs_data)}件のドキュメントがロードされました。" if was_updated else "ファイルに変更がないため、再読み込みは行いませんでした。"
-    
-    return {
-        "mimeType": "text/plain",
-        "text": status_message
-    }
-
-# 静的リソース: サーバー状態
-@mcp.resource("docs://status")
-async def get_status() -> dict:
-    """サーバーの状態を返します"""
-    return {
-        "mimeType": "application/json",
-        "text": json.dumps({
-            "status": "running",
-            "documentCount": len(docs_repository.docs_data),
-            "sourceFile": str(docs_repository.file_path),
-            "lastModified": docs_repository.last_modified_time
-        }, indent=2)
-    }
 
 # ツール: ドキュメント取得（URLパラメータを使用）
 @mcp.tool("getDocument_gemini")
@@ -192,42 +167,6 @@ async def get_document_by_url(url: str) -> dict:
         "document": {
             "title": doc.get('title', 'タイトルなし'),
             "url": url,
-            "content": doc.get('content', 'コンテンツなし')
-        }
-    }
-
-# ツール: インデックスでドキュメント取得
-@mcp.tool("getDocumentByIndex_gemini")
-async def get_document_by_index(index: int) -> dict:
-    """
-    指定されたインデックス番号のドキュメントを取得します。
-    
-    Args:
-        index: ドキュメントのインデックス（1から始まる）
-        
-    Returns:
-        ドキュメントの内容
-    """
-    if not docs_repository.docs_data:
-        return {
-            "success": False,
-            "message": "ドキュメントデータが読み込まれていません。"
-        }
-    
-    # インデックスの検証
-    idx = index - 1  # 1-based から 0-based へ変換
-    if idx < 0 or idx >= len(docs_repository.docs_data):
-        return {
-            "success": False,
-            "message": f"インデックス {index} は範囲外です。有効な範囲: 1-{len(docs_repository.docs_data)}"
-        }
-    
-    doc = docs_repository.docs_data[idx]
-    return {
-        "success": True,
-        "document": {
-            "title": doc.get('title', 'タイトルなし'),
-            "url": doc.get('url', 'URLなし'),
             "content": doc.get('content', 'コンテンツなし')
         }
     }
